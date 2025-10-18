@@ -16,6 +16,7 @@ public:
         this->literal = literal;
         this->line = line;
     }
+    Token():line(1),type(TokenType::END_OF_FILE) {};
 
     std::string toString() {
         return enumToString(type) + " " + lexeme + " " + literal;

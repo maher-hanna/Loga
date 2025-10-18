@@ -9,8 +9,9 @@
 #include "Loga.h"
 #include "Errors.h"
 #include "Scanner.h"
-
-
+#include "ExpressionNode.h"
+#include "AstPrinter.h"
+#include "BinaryNode.h"
 
 void run(std::string source) {
     Scanner* scanner = new Scanner(source);
@@ -43,8 +44,6 @@ void runFile(std::string path) {
 }
 
 void runPrompt() {
-    //InputStreamReader input = new InputStreamReader(System.in);
-    //BufferedReader reader = new BufferedReader(input);
 
     for (;;) {
         std::cout << "> ";
@@ -58,8 +57,24 @@ void runPrompt() {
     }
 }
 
+
 int main(int argc, char* argv[])
 {
+    //AstPrinter astPrinter;
+
+    //ExpressionNode* expression = new BinaryNode(
+    //    new UnaryNode(
+    //        Token(TokenType::MINUS, "-", "", 1),
+    //        new LiteralNode("123.0")),
+    //    Token(TokenType::STAR, "*", "", 1),
+    //    new GroupingNode(
+    //        new LiteralNode("45.67"))
+
+    //);
+
+    //std::cout << astPrinter.print(*expression);
+    //delete expression;
+
     if (argc > 2) {
         std::cout << "Usage: jlox [script]";
         std::exit(64);
