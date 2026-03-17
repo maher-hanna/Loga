@@ -9,9 +9,8 @@
 #include "Loga.h"
 #include "Errors.h"
 #include "Scanner.h"
-#include "ExpressionNode.h"
 #include "AstPrinter.h"
-#include "BinaryNode.h"
+#include "Parser.h"
 
 void run(std::string source) {
     Scanner* scanner = new Scanner(source);
@@ -21,6 +20,15 @@ void run(std::string source) {
     for (Token token : tokens) {
         std::cout << token.toString() << std::endl;
     }
+
+    Parser parser (tokens);
+    ExpressionNode * expression = parser.parse();
+
+    // Stop if there was a syntax error.
+    if (hadError) return;
+	AstPrinter astPrinter;
+
+    std::cout << astPrinter.print(*expression);
     delete scanner;
 }
 
