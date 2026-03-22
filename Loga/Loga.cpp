@@ -11,15 +11,16 @@
 #include "Scanner.h"
 #include "AstPrinter.h"
 #include "Parser.h"
+#include "Interpreter.h"
 
 void run(std::string source) {
     Scanner* scanner = new Scanner(source);
     std::vector<Token> tokens = scanner->scanTokens();
 
     // For now, just print the tokens.
-    for (Token token : tokens) {
-        std::cout << token.toString() << std::endl;
-    }
+    //for (Token token : tokens) {
+    //    std::cout << token.toString() << std::endl;
+    //}
 
     Parser parser (tokens);
     ExpressionNode * expression = parser.parse();
@@ -27,9 +28,14 @@ void run(std::string source) {
     // Stop if there was a syntax error.
     if (hadError) return;
 	AstPrinter astPrinter;
+    Interpreter* interpreter = new Interpreter();
 
-    std::cout << astPrinter.print(*expression);
+    interpreter->interpret(*expression);
+
+
+    //std::cout << astPrinter.print(*expression);
     delete scanner;
+	delete interpreter;
 }
 
 
@@ -47,6 +53,9 @@ void runFile(std::string path) {
     }
     if (hadError)
         std::exit(65);
+    if (hadRuntimeError)
+        std::exit(70);
+
 
 
 }

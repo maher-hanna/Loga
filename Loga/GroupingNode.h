@@ -10,7 +10,7 @@ public:
 	GroupingNode() :expression(nullptr) {}
 	GroupingNode(ExpressionNode* node) :expression(node) {}
 	ExpressionNode *expression;
-	std::string accept(ExpressionVisitor& visitor);
+	std::variant<double, int, std::string, std::nullptr_t, bool> accept(ExpressionVisitor& visitor);
 
 
 private:

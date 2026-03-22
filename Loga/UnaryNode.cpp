@@ -1,6 +1,6 @@
 #include "UnaryNode.h"
 
-std::string UnaryNode::accept(ExpressionVisitor& visitor)
+std::variant<double, int, std::string, std::nullptr_t, bool> UnaryNode::accept(ExpressionVisitor& visitor)
 {
 	return visitor.visitUnaryNode(*this);
 }

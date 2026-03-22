@@ -13,7 +13,7 @@ public:
 	ExpressionNode* left;
 	Token binaryOperator;
 	ExpressionNode* right;
-	std::string accept(ExpressionVisitor& visitor) override;
+	std::variant<double, int, std::string, std::nullptr_t, bool> accept(ExpressionVisitor& visitor) override;
 
 };
 

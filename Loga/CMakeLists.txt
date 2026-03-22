@@ -3,9 +3,9 @@
 #
 
 # Add source to this project's executable.
-add_executable (Loga "Loga.cpp" "Loga.h" "Token.h" "TokenType.h"  "Scanner.h" "Scanner.cpp" "Errors.h" "Errors.cpp" "ExpressionNode.h" "BinaryNode.h" "GroupingNode.h" "LiteralNode.h" "UnaryNode.h" "ExpressionVisitor.h" "BinaryNode.cpp" "LiteralNode.cpp"  "UnaryNode.cpp"  "AstPrinter.h" "AstPrinter.cpp" "GroupingNode.cpp" "Parser.h" "Parser.cpp" "ParseError.h")
+add_executable (Loga "Loga.cpp" "Loga.h" "Token.h" "TokenType.h"  "Scanner.h" "Scanner.cpp" "Errors.h" "Errors.cpp" "ExpressionNode.h" "BinaryNode.h" "GroupingNode.h" "LiteralNode.h" "UnaryNode.h" "ExpressionVisitor.h" "BinaryNode.cpp" "LiteralNode.cpp"  "UnaryNode.cpp"  "AstPrinter.h" "AstPrinter.cpp" "GroupingNode.cpp" "Parser.h" "Parser.cpp" "ParseError.h" "Interpreter.cpp")
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
+if (CMAKE_VERSION VERSION_GREATER 3.14)
   set_property(TARGET Loga PROPERTY CXX_STANDARD 20)
 endif()
 

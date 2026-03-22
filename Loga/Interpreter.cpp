@@ -1,0 +1,102 @@
+#include "Interpreter.h"
+
+std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitLiteralNode(LiteralNode& node)
+{
+	return node.value;
+}
+
+std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitUnaryNode(UnaryNode& node)
+{
+	std::variant<double, int, std::string, std::nullptr_t, bool> right = evaluate(*node.right);
+
+	switch (node.unaryOperator.type) {
+	case TokenType::BANG:
+		return !isTruthy(right);
+	case TokenType::MINUS:
+		checkNumberOperand(node.unaryOperator, right);
+		return -std::get<double>(right);
+	}
+
+	// Unreachable.
+	return nullptr;
+}
+
+std::string Interpreter::stringify(std::variant<double, int, std::string, std::nullptr_t, bool> value)
+{
+	if (std::holds_alternative<nullptr_t>(value)) return "nil";
+
+	if (std::holds_alternative<double>(value)) {
+		std::string text = std::to_string(std::get<double>(value));
+		if (text.ends_with(".0")) {
+			text = text.substr(0, text.length() - 2);
+		}
+		return text;
+	}
+	if (std::holds_alternative<bool>(value)) {
+		bool boolValue = std::get<bool>(value);
+		return boolValue ? "true" : "false";
+		
+		
+	}
+
+	return std::get<std::string>(value);
+
+}
+
+std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::evaluate(ExpressionNode& node)
+{
+	return node.accept(*this);
+}
+
+
+std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitBinaryNode(BinaryNode& node)
+{
+	std::variant<double, int, std::string, std::nullptr_t, bool> left = evaluate(*node.left);
+	std::variant<double, int, std::string, std::nullptr_t, bool> right = evaluate(*node.right);
+
+	switch (node.binaryOperator.type) {
+	case TokenType::MINUS:
+		checkNumberOperands(node.binaryOperator, left, right);
+		return std::get<double>(left) - std::get<double>(right);
+	case TokenType::SLASH:
+		checkNumberOperands(node.binaryOperator, left, right);
+		checkNumberOperands(node.binaryOperator, left, right);
+		return std::get<double>(left) / std::get<double>(right);
+	case TokenType::STAR:
+		checkNumberOperands(node.binaryOperator, left, right);
+		return std::get<double>(left) * std::get<double>(right);
+	case TokenType::PLUS:
+		if (std::holds_alternative<double>(left) && std::holds_alternative<double>(right)) {
+			return std::get<double>(left) + std::get<double>(right);
+		}
+
+		if (std::holds_alternative<std::string>(left) && std::holds_alternative<std::string>(right)) {
+			return std::get<std::string>(left) + std::get<std::string>(right);
+		}
+		throw new RuntimeError(node.binaryOperator,
+			"Operands must be two numbers or two strings.");
+	case TokenType::GREATER:
+		checkNumberOperands(node.binaryOperator, left, right);
+		return std::get<double>(left) > std::get<double>(right);
+	case TokenType::GREATER_EQUAL:
+		checkNumberOperands(node.binaryOperator, left, right);
+		return std::get<double>(left) >= std::get<double>(right);
+	case TokenType::LESS:
+		checkNumberOperands(node.binaryOperator, left, right);
+		return std::get<double>(left) < std::get<double>(right);
+	case TokenType::LESS_EQUAL:
+		checkNumberOperands(node.binaryOperator, left, right);
+		return std::get<double>(left) <= std::get<double>(right);
+
+	case TokenType::BANG_EQUAL: return !isEqual(left, right);
+	case TokenType::EQUAL_EQUAL: return isEqual(left, right);
+	}
+
+	// Unreachable.
+	return nullptr;
+}
+
+std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitGroupingNode(GroupingNode& node)
+{
+	return evaluate(*node.expression);
+}

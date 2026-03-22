@@ -12,7 +12,7 @@ public:
 	UnaryNode(Token unaryOperator,ExpressionNode* right) :unaryOperator(unaryOperator),right(right){}
 	Token unaryOperator;
 	ExpressionNode* right;
-	std::string accept(ExpressionVisitor& visitor);
+	std::variant<double, int, std::string, std::nullptr_t, bool> accept(ExpressionVisitor& visitor);
 
 
 };
