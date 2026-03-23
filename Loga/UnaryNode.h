@@ -1,17 +1,17 @@
 #pragma once
 #include <string>
-#include "ExpressionNode.h"
+#include "Expression.h"
 #include "Token.h"
 #include "ExpressionVisitor.h"
 
 
-class UnaryNode : public ExpressionNode
+class UnaryNode : public Expression
 {
 public:
 	UnaryNode() :unaryOperator(),right(nullptr){}
-	UnaryNode(Token unaryOperator,ExpressionNode* right) :unaryOperator(unaryOperator),right(right){}
+	UnaryNode(Token unaryOperator,Expression* right) :unaryOperator(unaryOperator),right(right){}
 	Token unaryOperator;
-	ExpressionNode* right;
+	Expression* right;
 	std::variant<double, int, std::string, std::nullptr_t, bool> accept(ExpressionVisitor& visitor);
 
 

@@ -23,14 +23,14 @@ void run(std::string source) {
     //}
 
     Parser parser (tokens);
-    ExpressionNode * expression = parser.parse();
+    std::vector<Statement*> statements = parser.parse();
 
     // Stop if there was a syntax error.
     if (hadError) return;
 	AstPrinter astPrinter;
     Interpreter* interpreter = new Interpreter();
 
-    interpreter->interpret(*expression);
+    interpreter->interpret(statements);
 
 
     //std::cout << astPrinter.print(*expression);

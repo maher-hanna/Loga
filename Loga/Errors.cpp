@@ -5,11 +5,11 @@ bool hadError;
 bool hadRuntimeError;
 
 void report(int line, std::string where, std::string message) {
-	std::cerr << "[line " << line << "] Error" << where << ": " << message;
+	std::cerr << "[line " << line << "] Error" << where << ": " << message << std::endl;
 	hadError = true;
 }
 void report(RuntimeError error) {
-	std::cerr << error.what() << "\n";
+	std::cerr << error.what() << std::endl;
 }
 
 void error(int line, std::string message) {

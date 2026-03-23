@@ -2,10 +2,10 @@
 #include <string>
 #include "ExpressionVisitor.h"
 
-class ExpressionNode {
+class Expression {
 public:
-	ExpressionNode() {}
+	Expression() {}
 	virtual std::variant<double, int, std::string, std::nullptr_t, bool> accept(ExpressionVisitor& visitor) = 0;
-	virtual ~ExpressionNode() {}
+	virtual ~Expression() {}
 
 };

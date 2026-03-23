@@ -2,6 +2,7 @@
 
 #include <variant>
 #include <iostream>
+#include <vector>
 #include "ExpressionVisitor.h"
 #include "BinaryNode.h"
 #include "UnaryNode.h"
@@ -9,29 +10,40 @@
 #include "LiteralNode.h"
 #include "RuntimeError.h"
 #include "Errors.h"
+#include "StatementVisitor.h"
+#include "ExpressionStatement.h"
+#include "PrintStatement.h"
 
-class Interpreter : public ExpressionVisitor {
+class Interpreter : public ExpressionVisitor, StatementVisitor {
 public:
 
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitBinaryNode(BinaryNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitGroupingNode(GroupingNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitLiteralNode(LiteralNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitUnaryNode(UnaryNode& node) override;
+	void visitExpressionStatement(ExpressionStatement& statement) override;
+	void visitPrintStatement(PrintStatement& statement) override;
 
 	std::string stringify(std::variant<double, int, std::string, std::nullptr_t, bool> value);
 
-	void interpret(ExpressionNode& expression) {
+	void execute(Statement* stmt) {
+		stmt->accept(*this);
+	}
+
+	void interpret(std::vector<Statement*> statements) {
 		try {
-			std::variant<double, int, std::string, std::nullptr_t, bool> value = evaluate(expression);
-			std::cout << stringify(value) << std::endl;
+			for (auto &statement : statements) {
+				execute(statement);
+			}
 		}
-		catch (RuntimeError &err) {
+		catch (RuntimeError& err) {
 			error(err);
 		}
+
 	}
 
 private:
-	std::variant<double, int, std::string, std::nullptr_t, bool> evaluate(ExpressionNode& node) ;
+	std::variant<double, int, std::string, std::nullptr_t, bool> evaluate(Expression& node);
 
 	bool isTruthy(std::variant<double, int, std::string, std::nullptr_t, bool> value) {
 		if (std::holds_alternative<nullptr_t>(value)) return false;

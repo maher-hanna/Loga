@@ -1,10 +1,10 @@
 #pragma once
 #include <string>
 #include <variant>
-#include "ExpressionNode.h"
+#include "Expression.h"
 #include "ExpressionVisitor.h"
 
-class LiteralNode : public ExpressionNode
+class LiteralNode : public Expression
 {
 public:
 	LiteralNode() :value() {}

@@ -2,9 +2,8 @@
 
 #include <vector>
 #include "Token.h"
-#include "ExpressionNode.h"
-#include "ParseError.h"
-#include "Errors.h"
+#include "Expression.h"
+#include "Statement.h"
 
 class Parser {
 private:
@@ -37,22 +36,25 @@ private:
 
 
     Token consume(TokenType type, std::string message);
+    void synchronize();
 
 
     bool match(const std::vector<TokenType> &types);
 
-    ExpressionNode * comparison();
+    Expression * comparison();
 
-    ExpressionNode* equality();
+    Expression* equality();
 
-    ExpressionNode* expression() {
+    Expression* expression() {
         return equality();
     }
-    ExpressionNode* term();
-    ExpressionNode* factor();
-    ExpressionNode* unary();
-    ExpressionNode* primary();
-
+    Expression* term();
+    Expression* factor();
+    Expression* unary();
+    Expression* primary();
+	Statement * statement();
+	Statement * printStatement();
+	Statement * expressionStatement();
 
 public:
 
@@ -61,6 +63,6 @@ public:
        
     }
 
-    ExpressionNode* parse();
+    std::vector<Statement*> parse();
 
 };

@@ -1,4 +1,6 @@
 #include "Interpreter.h"
+#include "ExpressionStatement.h"
+#include "PrintStatement.h"
 
 std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitLiteralNode(LiteralNode& node)
 {
@@ -19,6 +21,19 @@ std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitU
 
 	// Unreachable.
 	return nullptr;
+}
+
+void Interpreter::visitExpressionStatement(ExpressionStatement& statement)
+{
+	evaluate(*(statement.expression));
+	return;
+}
+
+void Interpreter::visitPrintStatement(PrintStatement& statement)
+{
+	std::variant<double, int, std::string, std::nullptr_t, bool> value = evaluate(*(statement.expression));
+	std::cout << stringify(value) << std::endl;
+	return;
 }
 
 std::string Interpreter::stringify(std::variant<double, int, std::string, std::nullptr_t, bool> value)
@@ -43,7 +58,7 @@ std::string Interpreter::stringify(std::variant<double, int, std::string, std::n
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::evaluate(ExpressionNode& node)
+std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::evaluate(Expression& node)
 {
 	return node.accept(*this);
 }
@@ -73,7 +88,7 @@ std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitB
 		if (std::holds_alternative<std::string>(left) && std::holds_alternative<std::string>(right)) {
 			return std::get<std::string>(left) + std::get<std::string>(right);
 		}
-		throw new RuntimeError(node.binaryOperator,
+		throw RuntimeError(node.binaryOperator,
 			"Operands must be two numbers or two strings.");
 	case TokenType::GREATER:
 		checkNumberOperands(node.binaryOperator, left, right);

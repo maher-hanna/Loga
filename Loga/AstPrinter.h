@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "ExpressionNode.h"
+#include "Expression.h"
 #include "ExpressionVisitor.h"
 #include "BinaryNode.h"
 #include "UnaryNode.h"
@@ -10,7 +10,7 @@
 
 class AstPrinter: public ExpressionVisitor {
 public:
-	std::string print(ExpressionNode &node);
+	std::string print(Expression &node);
 
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitBinaryNode(BinaryNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitGroupingNode(GroupingNode& node) override;
@@ -19,6 +19,6 @@ public:
 	virtual ~AstPrinter() {} // Provide a definition
 
 private:
-	std::variant<double, int, std::string, std::nullptr_t, bool> parenthesize(const std::string &name,std::vector<ExpressionNode*>& nodes);
+	std::variant<double, int, std::string, std::nullptr_t, bool> parenthesize(const std::string &name,std::vector<Expression*>& nodes);
 
 };

@@ -1,13 +1,15 @@
 #include "AstPrinter.h"
+#include <variant>
+#include <string>
 
 
-std::string AstPrinter::print(ExpressionNode& node) {
+std::string AstPrinter::print(Expression& node) {
 	return std::get<std::string>(node.accept(*this));
 
 }
 
 std::variant<double, int, std::string, std::nullptr_t, bool> AstPrinter::visitBinaryNode(BinaryNode& node) {
-	std::vector<ExpressionNode*> expressionItems;
+	std::vector<Expression*> expressionItems;
 	expressionItems.push_back(node.left);
 	expressionItems.push_back(node.right);
 	return parenthesize(node.binaryOperator.lexeme,expressionItems);
@@ -15,7 +17,7 @@ std::variant<double, int, std::string, std::nullptr_t, bool> AstPrinter::visitBi
 }
 
 std::variant<double, int, std::string, std::nullptr_t, bool> AstPrinter::visitGroupingNode(GroupingNode& node) {
-	std::vector<ExpressionNode*> expressionItems;
+	std::vector<Expression*> expressionItems;
 	expressionItems.push_back(node.expression);
 	return parenthesize("group", expressionItems);
 
@@ -28,19 +30,19 @@ std::variant<double, int, std::string, std::nullptr_t, bool> AstPrinter::visitLi
 }
 
 std::variant<double, int, std::string, std::nullptr_t, bool> AstPrinter::visitUnaryNode(UnaryNode& node) {
-	std::vector<ExpressionNode*> expressionItems;
+	std::vector<Expression*> expressionItems;
 	expressionItems.push_back(node.right);
 	return parenthesize(node.unaryOperator.lexeme, expressionItems);
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool> AstPrinter::parenthesize(const std::string& name,std::vector<ExpressionNode*>& nodes)
+std::variant<double, int, std::string, std::nullptr_t, bool> AstPrinter::parenthesize(const std::string& name,std::vector<Expression*>& nodes)
 {
 	std::string result = "";
 
 	result += "(";
 	result += name;
-	for (ExpressionNode* & node : nodes) {
+	for (Expression* & node : nodes) {
 		result += " ";
 		result += std::get<std::string>(node->accept(*this));
 	}
