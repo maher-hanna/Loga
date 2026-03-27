@@ -1,28 +1,33 @@
 #pragma once
 
 #include <variant>
-#include <iostream>
 #include <vector>
 #include "ExpressionVisitor.h"
 #include "BinaryNode.h"
 #include "UnaryNode.h"
 #include "GroupingNode.h"
 #include "LiteralNode.h"
+#include "VariableNode.h"
 #include "RuntimeError.h"
 #include "Errors.h"
 #include "StatementVisitor.h"
 #include "ExpressionStatement.h"
 #include "PrintStatement.h"
+#include "Environment.h"
 
 class Interpreter : public ExpressionVisitor, StatementVisitor {
 public:
+	Interpreter() :environment() {}
 
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitBinaryNode(BinaryNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitGroupingNode(GroupingNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitLiteralNode(LiteralNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitUnaryNode(UnaryNode& node) override;
+	std::variant<double, int, std::string, std::nullptr_t, bool> visitVariableNode(VariableNode& node) override;
 	void visitExpressionStatement(ExpressionStatement& statement) override;
 	void visitPrintStatement(PrintStatement& statement) override;
+	void visitVariableStatement(VariableStatement& statement) override;
+
 
 	std::string stringify(std::variant<double, int, std::string, std::nullptr_t, bool> value);
 
@@ -43,6 +48,9 @@ public:
 	}
 
 private:
+	Environment environment;
+
+
 	std::variant<double, int, std::string, std::nullptr_t, bool> evaluate(Expression& node);
 
 	bool isTruthy(std::variant<double, int, std::string, std::nullptr_t, bool> value) {

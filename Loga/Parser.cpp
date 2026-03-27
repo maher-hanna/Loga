@@ -4,9 +4,12 @@
 #include "UnaryNode.h"
 #include "LiteralNode.h"
 #include "GroupingNode.h"
+#include "VariableNode.h"
 #include "Errors.h"
 #include "PrintStatement.h"
 #include "ExpressionStatement.h"
+#include "VariableStatement.h"
+#include "ParseError.h"
 
 Expression* Parser::equality() {
 	Expression* expr = comparison();
@@ -94,6 +97,9 @@ Expression* Parser::primary() {
 	if (match({ TokenType::NUMBER, TokenType::STRING })) {
 		return new LiteralNode(previous().literal);
 	}
+	if (match({ TokenType::IDENTIFIER })) {
+		return new VariableNode(previous());
+	}
 
 	if (match({ TokenType::LEFT_PAREN })) {
 		Expression* expr = expression();
@@ -125,6 +131,34 @@ Statement * Parser::expressionStatement()
 	Expression*  expr = expression();
 	consume(TokenType::SEMICOLON, "Expect ';' after expression.");
 	return new ExpressionStatement(expr);
+}
+
+Statement* Parser::declaration()
+{
+
+		try {
+			if (match({ TokenType::VAR })) return varDeclaration();
+
+			return statement();
+		}
+		catch (ParseError &error) {
+			synchronize();
+			return nullptr;
+		}
+	
+}
+
+Statement* Parser::varDeclaration()
+{
+	Token name = consume(TokenType::IDENTIFIER, "Expect variable name.");
+
+	Expression * initializer = nullptr;
+	if (match({ TokenType::EQUAL })) {
+		initializer = expression();
+	}
+
+	consume(TokenType::SEMICOLON, "Expect ';' after variable declaration.");
+	return new VariableStatement(name, initializer);
 }
 
 Expression* Parser::comparison() {
@@ -179,7 +213,7 @@ void Parser::synchronize() {
 std::vector<Statement*> Parser::parse() {
 	std::vector<Statement*> statements;
 	while (!isAtEnd()) {
-		statements.push_back(statement());
+		statements.push_back(declaration());
 	}
 
 	return statements;

@@ -55,6 +55,8 @@ private:
 	Statement * statement();
 	Statement * printStatement();
 	Statement * expressionStatement();
+    Statement* declaration();
+    Statement* varDeclaration();
 
 public:
 

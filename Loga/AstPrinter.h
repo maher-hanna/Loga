@@ -7,6 +7,7 @@
 #include "UnaryNode.h"
 #include "GroupingNode.h"
 #include "LiteralNode.h"
+#include "VariableNode.h"
 
 class AstPrinter: public ExpressionVisitor {
 public:
@@ -16,6 +17,7 @@ public:
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitGroupingNode(GroupingNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitLiteralNode(LiteralNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitUnaryNode(UnaryNode& node) override;
+	std::variant<double, int, std::string, std::nullptr_t, bool> visitVariableNode(VariableNode& node) override;
 	virtual ~AstPrinter() {} // Provide a definition
 
 private:

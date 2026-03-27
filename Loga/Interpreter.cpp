@@ -1,6 +1,7 @@
 #include "Interpreter.h"
 #include "ExpressionStatement.h"
 #include "PrintStatement.h"
+#include "VariableStatement.h"
 
 std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitLiteralNode(LiteralNode& node)
 {
@@ -23,6 +24,12 @@ std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitU
 	return nullptr;
 }
 
+std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitVariableNode(VariableNode& node)
+{
+	return environment.get(node.name);
+
+}
+
 void Interpreter::visitExpressionStatement(ExpressionStatement& statement)
 {
 	evaluate(*(statement.expression));
@@ -33,6 +40,17 @@ void Interpreter::visitPrintStatement(PrintStatement& statement)
 {
 	std::variant<double, int, std::string, std::nullptr_t, bool> value = evaluate(*(statement.expression));
 	std::cout << stringify(value) << std::endl;
+	return;
+}
+
+void Interpreter::visitVariableStatement(VariableStatement& statement)
+{
+	std::variant<double, int, std::string, std::nullptr_t, bool> value = nullptr;
+	if (statement.expression != nullptr) {
+		value = evaluate(*(statement.expression));
+	}
+
+	environment.define(statement.name.lexeme, value);
 	return;
 }
 

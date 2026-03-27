@@ -36,6 +36,11 @@ std::variant<double, int, std::string, std::nullptr_t, bool> AstPrinter::visitUn
 
 }
 
+std::variant<double, int, std::string, std::nullptr_t, bool> AstPrinter::visitVariableNode(VariableNode& node)
+{
+	return std::variant<double, int, std::string, std::nullptr_t, bool>();
+}
+
 std::variant<double, int, std::string, std::nullptr_t, bool> AstPrinter::parenthesize(const std::string& name,std::vector<Expression*>& nodes)
 {
 	std::string result = "";

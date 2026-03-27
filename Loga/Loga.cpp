@@ -13,7 +13,7 @@
 #include "Parser.h"
 #include "Interpreter.h"
 
-void run(std::string source) {
+void run(std::string source,Interpreter * interpreter) {
     Scanner* scanner = new Scanner(source);
     std::vector<Token> tokens = scanner->scanTokens();
 
@@ -28,24 +28,22 @@ void run(std::string source) {
     // Stop if there was a syntax error.
     if (hadError) return;
 	AstPrinter astPrinter;
-    Interpreter* interpreter = new Interpreter();
 
     interpreter->interpret(statements);
 
 
     //std::cout << astPrinter.print(*expression);
     delete scanner;
-	delete interpreter;
 }
 
 
 
-void runFile(std::string path) {
+void runFile(std::string path,Interpreter * interpreter) {
     std::ifstream file(path, std::ios::in | std::ios::binary);
     if (file) {
         std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
         file.close();
-        run(content);
+        run(content,interpreter);
     }
     else {
         std::cerr << "Error opening file!" << std::endl;
@@ -60,7 +58,7 @@ void runFile(std::string path) {
 
 }
 
-void runPrompt() {
+void runPrompt(Interpreter * interpreter) {
 
     for (;;) {
         std::cout << "> ";
@@ -68,7 +66,7 @@ void runPrompt() {
         std::getline(std::cin, line);
         if (line.empty())
             break;
-        run(line);
+        run(line,interpreter);
         hadError = false;
 
     }
@@ -91,16 +89,17 @@ int main(int argc, char* argv[])
 
     //std::cout << astPrinter.print(*expression);
     //delete expression;
+    Interpreter* interpreter = new Interpreter();
 
     if (argc > 2) {
         std::cout << "Usage: jlox [script]";
         std::exit(64);
     }
     else if (argc == 2) {
-        runFile(argv[0]);
+        runFile(argv[0],interpreter);
     }
     else {
-        runPrompt();
+        runPrompt(interpreter);
     }
 	return 0;
 }
