@@ -1,3 +1,4 @@
+#include <memory>
 #include "Parser.h"
 #include "BinaryNode.h"
 #include "TokenType.h"
@@ -5,6 +6,7 @@
 #include "LiteralNode.h"
 #include "GroupingNode.h"
 #include "VariableNode.h"
+#include "AssignNode.h"
 #include "Errors.h"
 #include "PrintStatement.h"
 #include "ExpressionStatement.h"
@@ -110,6 +112,26 @@ Expression* Parser::primary() {
 	return nullptr;
 
 
+}
+
+Expression* Parser::assignment()
+{
+	Expression * expr = equality();
+
+	if (match({ TokenType::EQUAL })) {
+		Token equals = previous();
+		Expression * value = assignment();
+		
+		if (dynamic_cast<VariableNode*>(expr)) {
+			
+			Token name = (dynamic_cast<VariableNode*>(expr))->name;
+			return new AssignNode(name, value);
+		}
+
+		error(equals, "Invalid assignment target.");
+	}
+
+	return expr;
 }
 
 Statement * Parser::statement()

@@ -8,6 +8,7 @@
 #include "GroupingNode.h"
 #include "LiteralNode.h"
 #include "VariableNode.h"
+#include "AssignNode.h"
 #include "RuntimeError.h"
 #include "Errors.h"
 #include "StatementVisitor.h"
@@ -24,6 +25,7 @@ public:
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitLiteralNode(LiteralNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitUnaryNode(UnaryNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitVariableNode(VariableNode& node) override;
+	std::variant<double, int, std::string, std::nullptr_t, bool> visitAssignNode(AssignNode& node) override;
 	void visitExpressionStatement(ExpressionStatement& statement) override;
 	void visitPrintStatement(PrintStatement& statement) override;
 	void visitVariableStatement(VariableStatement& statement) override;

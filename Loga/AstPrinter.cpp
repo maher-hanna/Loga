@@ -41,6 +41,11 @@ std::variant<double, int, std::string, std::nullptr_t, bool> AstPrinter::visitVa
 	return std::variant<double, int, std::string, std::nullptr_t, bool>();
 }
 
+std::variant<double, int, std::string, std::nullptr_t, bool> AstPrinter::visitAssignNode(AssignNode& node)
+{
+	return std::variant<double, int, std::string, std::nullptr_t, bool>();
+}
+
 std::variant<double, int, std::string, std::nullptr_t, bool> AstPrinter::parenthesize(const std::string& name,std::vector<Expression*>& nodes)
 {
 	std::string result = "";

@@ -30,6 +30,13 @@ std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitV
 
 }
 
+std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitAssignNode(AssignNode& node)
+{
+	std::variant<double, int, std::string, std::nullptr_t, bool> value = evaluate(*(node.value));
+	environment.assign(node.name, value);
+	return value;
+}
+
 void Interpreter::visitExpressionStatement(ExpressionStatement& statement)
 {
 	evaluate(*(statement.expression));

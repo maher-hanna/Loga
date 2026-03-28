@@ -46,12 +46,13 @@ private:
     Expression* equality();
 
     Expression* expression() {
-        return equality();
+        return assignment();
     }
     Expression* term();
     Expression* factor();
     Expression* unary();
     Expression* primary();
+    Expression* assignment();
 	Statement * statement();
 	Statement * printStatement();
 	Statement * expressionStatement();

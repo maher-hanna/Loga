@@ -15,6 +15,16 @@ public:
 	void define(std::string name, std::variant<double, int, std::string, std::nullptr_t, bool> value) {
 		values[name]= value;
 	}
+	void assign(Token name, std::variant<double, int, std::string, std::nullptr_t, bool> value) {
+		if (values.contains(name.lexeme)) {
+			values[name.lexeme] = value;
+			return;
+		}
+		std::string errorMessage = "Undefined variable '" + name.lexeme + "'.";
+
+		throw new RuntimeError(name,
+			errorMessage.c_str());
+	}
 	std::variant<double, int, std::string, std::nullptr_t, bool> get(Token name) {
 		if (values.contains(name.lexeme)) {
 			return values[name.lexeme];
