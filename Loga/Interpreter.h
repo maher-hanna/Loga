@@ -29,6 +29,7 @@ public:
 	void visitExpressionStatement(ExpressionStatement& statement) override;
 	void visitPrintStatement(PrintStatement& statement) override;
 	void visitVariableStatement(VariableStatement& statement) override;
+	void visitBlockStatement(BlockStatement& statement) override;
 
 
 	std::string stringify(std::variant<double, int, std::string, std::nullptr_t, bool> value);
@@ -36,6 +37,8 @@ public:
 	void execute(Statement* stmt) {
 		stmt->accept(*this);
 	}
+	void executeBlock(std::vector<Statement*> statements,
+		Environment * environment);
 
 	void interpret(std::vector<Statement*> statements) {
 		try {

@@ -10,14 +10,20 @@
 class Environment
 {
 public:
-	Environment() :values() {}
+	Environment() :values(),enclosing(nullptr) {}
+	Environment(Environment * enclosing) :values(),enclosing(enclosing) {}
 
 	void define(std::string name, std::variant<double, int, std::string, std::nullptr_t, bool> value) {
 		values[name]= value;
 	}
+
 	void assign(Token name, std::variant<double, int, std::string, std::nullptr_t, bool> value) {
 		if (values.contains(name.lexeme)) {
 			values[name.lexeme] = value;
+			return;
+		}
+		if (enclosing != nullptr) {
+			enclosing->assign(name, value);
 			return;
 		}
 		std::string errorMessage = "Undefined variable '" + name.lexeme + "'.";
@@ -25,16 +31,21 @@ public:
 		throw new RuntimeError(name,
 			errorMessage.c_str());
 	}
+
 	std::variant<double, int, std::string, std::nullptr_t, bool> get(Token name) {
 		if (values.contains(name.lexeme)) {
 			return values[name.lexeme];
 		}
+		if (enclosing != nullptr) return enclosing->get(name);
+
 		std::string errorMessage = "Undefined variable \'" + name.lexeme + "\'.";
 
 		throw RuntimeError(name,
 			errorMessage.c_str());
 	}
+
 	std::map<std::string, std::variant<double, int, std::string, std::nullptr_t, bool>> values;
+	Environment* enclosing;
 
 };
 

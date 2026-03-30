@@ -11,6 +11,7 @@
 #include "PrintStatement.h"
 #include "ExpressionStatement.h"
 #include "VariableStatement.h"
+#include "BlockStatement.h"
 #include "ParseError.h"
 
 Expression* Parser::equality() {
@@ -137,6 +138,7 @@ Expression* Parser::assignment()
 Statement * Parser::statement()
 {
 	if (match({ TokenType::PRINT })) return printStatement();
+	if (match({ TokenType::LEFT_BRACE })) return new BlockStatement(block());
 
 	return expressionStatement();
 }
@@ -181,6 +183,18 @@ Statement* Parser::varDeclaration()
 
 	consume(TokenType::SEMICOLON, "Expect ';' after variable declaration.");
 	return new VariableStatement(name, initializer);
+}
+
+std::vector<Statement*> Parser::block()
+{
+	std::vector<Statement*> statements;
+
+	while (!check(TokenType::RIGHT_BRACE) && !isAtEnd()) {
+		statements.push_back(declaration());
+	}
+
+	consume(TokenType::RIGHT_BRACE, "Expect '}' after block.");
+	return statements;
 }
 
 Expression* Parser::comparison() {

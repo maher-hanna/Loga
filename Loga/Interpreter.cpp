@@ -2,6 +2,7 @@
 #include "ExpressionStatement.h"
 #include "PrintStatement.h"
 #include "VariableStatement.h"
+#include "BlockStatement.h"
 
 std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitLiteralNode(LiteralNode& node)
 {
@@ -61,6 +62,12 @@ void Interpreter::visitVariableStatement(VariableStatement& statement)
 	return;
 }
 
+void Interpreter::visitBlockStatement(BlockStatement& statement)
+{
+	executeBlock(statement.statements, new Environment(environment));
+	return;
+}
+
 std::string Interpreter::stringify(std::variant<double, int, std::string, std::nullptr_t, bool> value)
 {
 	if (std::holds_alternative<nullptr_t>(value)) return "nil";
@@ -80,6 +87,24 @@ std::string Interpreter::stringify(std::variant<double, int, std::string, std::n
 	}
 
 	return std::get<std::string>(value);
+
+}
+
+void Interpreter::executeBlock(std::vector<Statement*> statements, Environment * environment)
+{
+	Environment previous = this->environment;
+	try {
+		this->environment = environment;
+
+		for (Statement * statement : statements) {
+			execute(statement);
+		}
+	}
+	catch(...) {
+		this->environment = previous;
+		throw;
+	}
+	this->environment = previous;
 
 }
 
