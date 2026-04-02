@@ -12,6 +12,7 @@
 #include "ExpressionStatement.h"
 #include "VariableStatement.h"
 #include "BlockStatement.h"
+#include "IfStatement.h"
 #include "ParseError.h"
 
 Expression* Parser::equality() {
@@ -137,6 +138,7 @@ Expression* Parser::assignment()
 
 Statement * Parser::statement()
 {
+	if (match({ TokenType::IF })) return ifStatement();
 	if (match({ TokenType::PRINT })) return printStatement();
 	if (match({ TokenType::LEFT_BRACE })) return new BlockStatement(block());
 
@@ -155,6 +157,21 @@ Statement * Parser::expressionStatement()
 	Expression*  expr = expression();
 	consume(TokenType::SEMICOLON, "Expect ';' after expression.");
 	return new ExpressionStatement(expr);
+}
+
+Statement* Parser::ifStatement()
+{
+	consume(TokenType::LEFT_PAREN, "Expect '(' after 'if'.");
+	Expression * condition = expression();
+	consume(TokenType::RIGHT_PAREN, "Expect ')' after if condition.");
+
+	Statement * thenBranch = statement();
+	Statement* elseBranch = nullptr;
+	if (match({TokenType::ELSE })) {
+		elseBranch = statement();
+	}
+
+	return new IfStatement(condition, thenBranch, elseBranch);
 }
 
 Statement* Parser::declaration()

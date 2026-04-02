@@ -3,6 +3,7 @@
 #include "PrintStatement.h"
 #include "VariableStatement.h"
 #include "BlockStatement.h"
+#include "IfStatement.h"
 
 std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitLiteralNode(LiteralNode& node)
 {
@@ -65,6 +66,17 @@ void Interpreter::visitVariableStatement(VariableStatement& statement)
 void Interpreter::visitBlockStatement(BlockStatement& statement)
 {
 	executeBlock(statement.statements, new Environment(environment));
+	return;
+}
+
+void Interpreter::visitIfStatement(IfStatement& statement)
+{
+	if (isTruthy(evaluate(*(statement.condition)))) {
+		execute(statement.thenBranch);
+	}
+	else if (statement.elseBranch != nullptr) {
+		execute(statement.elseBranch);
+	}
 	return;
 }
 

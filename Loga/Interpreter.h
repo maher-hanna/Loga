@@ -13,6 +13,7 @@
 #include "Errors.h"
 #include "StatementVisitor.h"
 #include "ExpressionStatement.h"
+#include "IfStatement.h"
 #include "PrintStatement.h"
 #include "Environment.h"
 
@@ -30,6 +31,7 @@ public:
 	void visitPrintStatement(PrintStatement& statement) override;
 	void visitVariableStatement(VariableStatement& statement) override;
 	void visitBlockStatement(BlockStatement& statement) override;
+	void visitIfStatement(IfStatement& statement) override;
 
 
 	std::string stringify(std::variant<double, int, std::string, std::nullptr_t, bool> value);
@@ -60,7 +62,7 @@ private:
 
 	bool isTruthy(std::variant<double, int, std::string, std::nullptr_t, bool> value) {
 		if (std::holds_alternative<nullptr_t>(value)) return false;
-		if (std::holds_alternative<nullptr_t>(value)) return std::get<bool>(value);
+		if (std::holds_alternative<bool>(value)) return std::get<bool>(value);
 		return true;
 	}
 
