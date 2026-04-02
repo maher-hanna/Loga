@@ -8,6 +8,7 @@ class LiteralNode;
 class UnaryNode;
 class VariableNode;
 class AssignNode;
+class LogicalNode;
 
 
 class ExpressionVisitor {
@@ -18,6 +19,7 @@ public:
 	virtual std::variant<double, int, std::string, std::nullptr_t, bool> visitUnaryNode(UnaryNode& node) = 0;
 	virtual std::variant<double, int, std::string, std::nullptr_t, bool> visitVariableNode(VariableNode& node) = 0;
 	virtual std::variant<double, int, std::string, std::nullptr_t, bool> visitAssignNode(AssignNode& node) = 0;
+	virtual std::variant<double, int, std::string, std::nullptr_t, bool> visitLogicalNode(LogicalNode& node) = 0;
 	virtual ~ExpressionVisitor() {} // Provide a definition
 
 };

@@ -91,17 +91,17 @@ int main(int argc, char* argv[])
     //delete expression;
     Interpreter* interpreter = new Interpreter();
 
-    //if (argc > 2) {
-    //    std::cout << "Usage: jlox [script]";
-    //    std::exit(64);
-    //}
-    //else if (argc == 2) {
-    //    runFile(argv[0],interpreter);
-    //}
-    //else {
-    //    runPrompt(interpreter);
-    //}
-    runFile("C:/Users/maher/OneDrive/Desktop/test.loga", interpreter);
+    if (argc > 2) {
+        std::cout << "Usage: jlox [script]";
+        std::exit(64);
+    }
+    else if (argc == 2) {
+        runFile(argv[0],interpreter);
+    }
+    else {
+        runPrompt(interpreter);
+    }
+    //runFile("C:/Users/maher/OneDrive/Desktop/test.loga", interpreter);
 	return 0;
 }
 

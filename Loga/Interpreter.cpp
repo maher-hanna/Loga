@@ -39,6 +39,20 @@ std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitA
 	return value;
 }
 
+std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitLogicalNode(LogicalNode& node)
+{
+	std::variant<double, int, std::string, std::nullptr_t, bool> left = evaluate(*(node.left));
+
+	if (node.logicalOperator.type == TokenType::OR) {
+		if (isTruthy(left)) return left;
+	}
+	else {
+		if (!isTruthy(left)) return left;
+	}
+
+	return evaluate(*(node.right));
+}
+
 void Interpreter::visitExpressionStatement(ExpressionStatement& statement)
 {
 	evaluate(*(statement.expression));

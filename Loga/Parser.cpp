@@ -7,6 +7,7 @@
 #include "GroupingNode.h"
 #include "VariableNode.h"
 #include "AssignNode.h"
+#include "LogicalNode.h"
 #include "Errors.h"
 #include "PrintStatement.h"
 #include "ExpressionStatement.h"
@@ -96,7 +97,7 @@ Expression* Parser::primary() {
 
 	if (match({ TokenType::FALSE })) return new LiteralNode("false");
 	if (match({ TokenType::TRUE })) return new LiteralNode("true");
-	if (match({ TokenType::NIL })) return new LiteralNode("null");
+	if (match({ TokenType::NIL })) return new LiteralNode(nullptr);
 
 	if (match({ TokenType::NUMBER, TokenType::STRING })) {
 		return new LiteralNode(previous().literal);
@@ -118,7 +119,7 @@ Expression* Parser::primary() {
 
 Expression* Parser::assignment()
 {
-	Expression * expr = equality();
+	Expression * expr = orExpression();
 
 	if (match({ TokenType::EQUAL })) {
 		Token equals = previous();
@@ -131,6 +132,32 @@ Expression* Parser::assignment()
 		}
 
 		error(equals, "Invalid assignment target.");
+	}
+
+	return expr;
+}
+
+Expression* Parser::orExpression()
+{
+	Expression* expr = andExpression ();
+
+	while (match({ TokenType::OR })) {
+		Token opr = previous();
+		Expression* right = andExpression ();
+		expr = new LogicalNode(expr, opr, right);
+	}
+
+	return expr;
+}
+
+Expression* Parser::andExpression()
+{
+	Expression* expr = equality();
+
+	while (match({ TokenType::AND })) {
+		Token opr = previous();
+		Expression* right = equality();
+		expr = new LogicalNode(expr, opr, right);
 	}
 
 	return expr;

@@ -53,6 +53,8 @@ private:
     Expression* unary();
     Expression* primary();
     Expression* assignment();
+    Expression* orExpression();
+    Expression* andExpression();
 	Statement * statement();
 	Statement * printStatement();
 	Statement * expressionStatement();

@@ -9,6 +9,7 @@
 #include "LiteralNode.h"
 #include "VariableNode.h"
 #include "AssignNode.h"
+#include "LogicalNode.h"
 
 class AstPrinter: public ExpressionVisitor {
 public:
@@ -20,6 +21,7 @@ public:
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitUnaryNode(UnaryNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitVariableNode(VariableNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitAssignNode(AssignNode& node) override;
+	std::variant<double, int, std::string, std::nullptr_t, bool> visitLogicalNode(LogicalNode& node) override;
 	virtual ~AstPrinter() {} // Provide a definition
 
 private:
