@@ -28,14 +28,14 @@ std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitU
 
 std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitVariableNode(VariableNode& node)
 {
-	return environment.get(node.name);
+	return environment->get(node.name);
 
 }
 
 std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitAssignNode(AssignNode& node)
 {
 	std::variant<double, int, std::string, std::nullptr_t, bool> value = evaluate(*(node.value));
-	environment.assign(node.name, value);
+	environment->assign(node.name, value);
 	return value;
 }
 
@@ -73,13 +73,15 @@ void Interpreter::visitVariableStatement(VariableStatement& statement)
 		value = evaluate(*(statement.expression));
 	}
 
-	environment.define(statement.name.lexeme, value);
+	environment->define(statement.name.lexeme, value);
 	return;
 }
 
 void Interpreter::visitBlockStatement(BlockStatement& statement)
 {
-	executeBlock(statement.statements, new Environment(environment));
+	Environment *blockEnvironment = new Environment();
+	blockEnvironment->enclosing = environment;
+	executeBlock(statement.statements, blockEnvironment);
 	return;
 }
 
@@ -90,6 +92,14 @@ void Interpreter::visitIfStatement(IfStatement& statement)
 	}
 	else if (statement.elseBranch != nullptr) {
 		execute(statement.elseBranch);
+	}
+	return;
+}
+
+void Interpreter::visitWhileStatement(WhileStatement& statement)
+{
+	while (isTruthy(evaluate(*(statement.condition)))) {
+		execute(statement.body);
 	}
 	return;
 }
@@ -116,11 +126,11 @@ std::string Interpreter::stringify(std::variant<double, int, std::string, std::n
 
 }
 
-void Interpreter::executeBlock(std::vector<Statement*> statements, Environment * environment)
+void Interpreter::executeBlock(std::vector<Statement*> statements, Environment * env)
 {
-	Environment previous = this->environment;
+	Environment *previous = this->environment;
 	try {
-		this->environment = environment;
+		this->environment = env;
 
 		for (Statement * statement : statements) {
 			execute(statement);

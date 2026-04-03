@@ -14,6 +14,7 @@
 #include "VariableStatement.h"
 #include "BlockStatement.h"
 #include "IfStatement.h"
+#include "WhileStatement.h"
 #include "ParseError.h"
 
 Expression* Parser::equality() {
@@ -119,14 +120,14 @@ Expression* Parser::primary() {
 
 Expression* Parser::assignment()
 {
-	Expression * expr = orExpression();
+	Expression* expr = orExpression();
 
 	if (match({ TokenType::EQUAL })) {
 		Token equals = previous();
-		Expression * value = assignment();
-		
+		Expression* value = assignment();
+
 		if (dynamic_cast<VariableNode*>(expr)) {
-			
+
 			Token name = (dynamic_cast<VariableNode*>(expr))->name;
 			return new AssignNode(name, value);
 		}
@@ -139,11 +140,11 @@ Expression* Parser::assignment()
 
 Expression* Parser::orExpression()
 {
-	Expression* expr = andExpression ();
+	Expression* expr = andExpression();
 
 	while (match({ TokenType::OR })) {
 		Token opr = previous();
-		Expression* right = andExpression ();
+		Expression* right = andExpression();
 		expr = new LogicalNode(expr, opr, right);
 	}
 
@@ -163,25 +164,27 @@ Expression* Parser::andExpression()
 	return expr;
 }
 
-Statement * Parser::statement()
+Statement* Parser::statement()
 {
+	if (match({ TokenType::FOR })) return forStatement();
 	if (match({ TokenType::IF })) return ifStatement();
 	if (match({ TokenType::PRINT })) return printStatement();
+	if (match({ TokenType::WHILE })) return whileStatement();
 	if (match({ TokenType::LEFT_BRACE })) return new BlockStatement(block());
 
 	return expressionStatement();
 }
 
-Statement * Parser::printStatement()
+Statement* Parser::printStatement()
 {
-	Expression *value = expression();
+	Expression* value = expression();
 	consume(TokenType::SEMICOLON, "Expect ';' after value.");
 	return new PrintStatement(value);
 }
 
-Statement * Parser::expressionStatement()
+Statement* Parser::expressionStatement()
 {
-	Expression*  expr = expression();
+	Expression* expr = expression();
 	consume(TokenType::SEMICOLON, "Expect ';' after expression.");
 	return new ExpressionStatement(expr);
 }
@@ -189,38 +192,89 @@ Statement * Parser::expressionStatement()
 Statement* Parser::ifStatement()
 {
 	consume(TokenType::LEFT_PAREN, "Expect '(' after 'if'.");
-	Expression * condition = expression();
+	Expression* condition = expression();
 	consume(TokenType::RIGHT_PAREN, "Expect ')' after if condition.");
 
-	Statement * thenBranch = statement();
+	Statement* thenBranch = statement();
 	Statement* elseBranch = nullptr;
-	if (match({TokenType::ELSE })) {
+	if (match({ TokenType::ELSE })) {
 		elseBranch = statement();
 	}
 
 	return new IfStatement(condition, thenBranch, elseBranch);
 }
 
+Statement* Parser::whileStatement()
+{
+	consume(TokenType::LEFT_PAREN, "Expect '(' after 'while'.");
+	Expression* condition = expression();
+	consume(TokenType::RIGHT_PAREN, "Expect ')' after condition.");
+	Statement* body = statement();
+
+	return new WhileStatement(condition, body);
+}
+
+Statement* Parser::forStatement()
+{
+	consume(TokenType::LEFT_PAREN, "Expect '(' after 'for'.");
+	Statement* initializer;
+	if (match({ TokenType::SEMICOLON })) {
+		initializer = nullptr;
+	}
+	else if (match({ TokenType::VAR })) {
+		initializer = varDeclaration();
+	}
+	else {
+		initializer = expressionStatement();
+	}
+	Expression* condition = nullptr;
+	if (!check(TokenType::SEMICOLON)) {
+		condition = expression();
+	}
+	consume(TokenType::SEMICOLON, "Expect ';' after loop condition.");
+
+	Expression* increment = nullptr;
+	if (!check(TokenType::RIGHT_PAREN)) {
+		increment = expression();
+	}
+	consume(TokenType::RIGHT_PAREN, "Expect ')' after for clauses.");
+	Statement* body = statement();
+
+	if (increment != nullptr) {
+		body = new BlockStatement(
+			{
+				body,
+				new ExpressionStatement(increment) });
+	}
+	if (condition == nullptr) condition = new LiteralNode(true);
+	body = new WhileStatement(condition, body);
+
+	if (initializer != nullptr) {
+		body = new BlockStatement({ initializer, body });
+	}
+	return body;
+}
+
 Statement* Parser::declaration()
 {
 
-		try {
-			if (match({ TokenType::VAR })) return varDeclaration();
+	try {
+		if (match({ TokenType::VAR })) return varDeclaration();
 
-			return statement();
-		}
-		catch (ParseError &error) {
-			synchronize();
-			return nullptr;
-		}
-	
+		return statement();
+	}
+	catch (ParseError& error) {
+		synchronize();
+		return nullptr;
+	}
+
 }
 
 Statement* Parser::varDeclaration()
 {
 	Token name = consume(TokenType::IDENTIFIER, "Expect variable name.");
 
-	Expression * initializer = nullptr;
+	Expression* initializer = nullptr;
 	if (match({ TokenType::EQUAL })) {
 		initializer = expression();
 	}

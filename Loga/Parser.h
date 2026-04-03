@@ -59,6 +59,8 @@ private:
 	Statement * printStatement();
 	Statement * expressionStatement();
 	Statement * ifStatement();
+	Statement * whileStatement();
+	Statement * forStatement();
     Statement* declaration();
     Statement* varDeclaration();
     std::vector<Statement*> block();

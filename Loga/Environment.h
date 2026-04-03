@@ -10,8 +10,14 @@
 class Environment
 {
 public:
-	Environment() :values(),enclosing(nullptr) {}
-	Environment(Environment * enclosing) :values(),enclosing(enclosing) {}
+	Environment(const Environment& other) : values(other.values), enclosing(other.enclosing) {	}
+	Environment operator=(const Environment& other) {
+		values = other.values;
+		enclosing = other.enclosing;
+		return *this;
+	}
+	Environment() :enclosing(nullptr) {}
+	Environment(Environment* enclosing) : enclosing(enclosing) {}
 
 	void define(std::string name, std::variant<double, int, std::string, std::nullptr_t, bool> value) {
 		values[name]= value;
@@ -28,7 +34,7 @@ public:
 		}
 		std::string errorMessage = "Undefined variable '" + name.lexeme + "'.";
 
-		throw new RuntimeError(name,
+		throw RuntimeError(name,
 			errorMessage.c_str());
 	}
 

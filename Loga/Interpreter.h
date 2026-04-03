@@ -15,12 +15,13 @@
 #include "StatementVisitor.h"
 #include "ExpressionStatement.h"
 #include "IfStatement.h"
+#include "WhileStatement.h"
 #include "PrintStatement.h"
 #include "Environment.h"
 
 class Interpreter : public ExpressionVisitor, StatementVisitor {
 public:
-	Interpreter() :environment() {}
+	Interpreter() :environment(new Environment) {}
 
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitBinaryNode(BinaryNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool> visitGroupingNode(GroupingNode& node) override;
@@ -34,6 +35,7 @@ public:
 	void visitVariableStatement(VariableStatement& statement) override;
 	void visitBlockStatement(BlockStatement& statement) override;
 	void visitIfStatement(IfStatement& statement) override;
+	void visitWhileStatement(WhileStatement& statement) override;
 
 
 	std::string stringify(std::variant<double, int, std::string, std::nullptr_t, bool> value);
@@ -57,7 +59,7 @@ public:
 	}
 
 private:
-	Environment environment;
+	Environment * environment;
 
 
 	std::variant<double, int, std::string, std::nullptr_t, bool> evaluate(Expression& node);
