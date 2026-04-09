@@ -7,6 +7,9 @@ class VariableStatement;
 class BlockStatement;
 class IfStatement;
 class WhileStatement;
+class FunctionStatement;
+class ReturnStatement;
+class Environment;
 
 
 class StatementVisitor {
@@ -17,6 +20,8 @@ public:
 	virtual void visitBlockStatement(BlockStatement& statement) = 0;
 	virtual void visitIfStatement(IfStatement& statement) = 0;
 	virtual void visitWhileStatement(WhileStatement& statement) = 0;
+	virtual void visitFunctionStatement(FunctionStatement& statement) = 0;
+	virtual void visitReturnStatement(ReturnStatement& statement) = 0;
 	virtual ~StatementVisitor() {} // Provide a definition
 
 };

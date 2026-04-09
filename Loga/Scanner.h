@@ -5,6 +5,7 @@
 #include <map>
 #include "Token.h"
 #include "Errors.h"
+#include "LogaCallable.h"
 
 class Scanner {
 private :
@@ -150,7 +151,7 @@ public:
         addToken(type, "");
     }
 
-    void addToken(TokenType type, std::variant<double, int, std::string, std::nullptr_t, bool> literal) {
+    void addToken(TokenType type, std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> literal) {
         std::string text = source.substr(start, current - start);
         tokens.push_back(Token(type, text, literal, line));
     }

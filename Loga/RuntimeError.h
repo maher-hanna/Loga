@@ -10,6 +10,9 @@ public:
 	RuntimeError(Token opr,
 		const char* message) :opr(opr), message(message) {
 	}
+	RuntimeError(Token opr,
+		std::string message) :opr(opr), message(message) {
+	}
 	virtual const char* what() const throw()
 	{
 		return "Runtime error happened";

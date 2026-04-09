@@ -1,18 +1,24 @@
+#include <iostream>
+#include <string>
 #include "Interpreter.h"
 #include "ExpressionStatement.h"
 #include "PrintStatement.h"
 #include "VariableStatement.h"
 #include "BlockStatement.h"
 #include "IfStatement.h"
+#include "LogaCallable.h"
+#include "LogaFunction.h"
+#include "ReturnStatement.h"
+#include "ReturnValue.h"
 
-std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitLiteralNode(LiteralNode& node)
+std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitLiteralNode(LiteralNode& node)
 {
 	return node.value;
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitUnaryNode(UnaryNode& node)
+std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitUnaryNode(UnaryNode& node)
 {
-	std::variant<double, int, std::string, std::nullptr_t, bool> right = evaluate(*node.right);
+	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> right = evaluate(*node.right);
 
 	switch (node.unaryOperator.type) {
 	case TokenType::BANG:
@@ -26,22 +32,22 @@ std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitU
 	return nullptr;
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitVariableNode(VariableNode& node)
+std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitVariableNode(VariableNode& node)
 {
 	return environment->get(node.name);
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitAssignNode(AssignNode& node)
+std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitAssignNode(AssignNode& node)
 {
-	std::variant<double, int, std::string, std::nullptr_t, bool> value = evaluate(*(node.value));
+	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value = evaluate(*(node.value));
 	environment->assign(node.name, value);
 	return value;
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitLogicalNode(LogicalNode& node)
+std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitLogicalNode(LogicalNode& node)
 {
-	std::variant<double, int, std::string, std::nullptr_t, bool> left = evaluate(*(node.left));
+	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> left = evaluate(*(node.left));
 
 	if (node.logicalOperator.type == TokenType::OR) {
 		if (isTruthy(left)) return left;
@@ -53,6 +59,28 @@ std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitL
 	return evaluate(*(node.right));
 }
 
+std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitCallNode(CallNode& node)
+{
+	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> callee = evaluate(*(node.callee));
+
+	std::vector<std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*>> arguments;
+	for (Expression* argument : node.arguments) {
+		arguments.push_back(evaluate(*argument));
+	}
+	if (!(std::holds_alternative<LogaCallable*>)(callee)) {
+		throw new RuntimeError(node.paren,
+			"Can only call functions and classes.");
+	}
+	LogaCallable* function = std::get<LogaCallable*>(callee);
+
+	if (arguments.size() != function->getNumberOfArguments()) {
+		std::string errorMessage = "Expected " + std::to_string(function->getNumberOfArguments()) + " arguments but got " + std::to_string(arguments.size()) + ".";
+		throw new RuntimeError(node.paren, errorMessage);
+	}
+
+	return function->call(this, arguments);
+}
+
 void Interpreter::visitExpressionStatement(ExpressionStatement& statement)
 {
 	evaluate(*(statement.expression));
@@ -61,14 +89,14 @@ void Interpreter::visitExpressionStatement(ExpressionStatement& statement)
 
 void Interpreter::visitPrintStatement(PrintStatement& statement)
 {
-	std::variant<double, int, std::string, std::nullptr_t, bool> value = evaluate(*(statement.expression));
+	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value = evaluate(*(statement.expression));
 	std::cout << stringify(value) << std::endl;
 	return;
 }
 
 void Interpreter::visitVariableStatement(VariableStatement& statement)
 {
-	std::variant<double, int, std::string, std::nullptr_t, bool> value = nullptr;
+	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value = nullptr;
 	if (statement.expression != nullptr) {
 		value = evaluate(*(statement.expression));
 	}
@@ -104,7 +132,23 @@ void Interpreter::visitWhileStatement(WhileStatement& statement)
 	return;
 }
 
-std::string Interpreter::stringify(std::variant<double, int, std::string, std::nullptr_t, bool> value)
+void Interpreter::visitFunctionStatement(FunctionStatement& statement)
+{
+	LogaFunction * function = new LogaFunction(statement, environment);
+	environment->define(statement.name.lexeme, function);
+	return;
+}
+
+void Interpreter::visitReturnStatement(ReturnStatement& statement)
+{
+	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value = nullptr;
+	if (statement.value != nullptr) value = evaluate(*(statement.value));
+
+	// Throw by value, not pointer:
+	throw ReturnValue(value);
+}
+
+std::string Interpreter::stringify(std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value)
 {
 	if (std::holds_alternative<nullptr_t>(value)) return "nil";
 
@@ -144,16 +188,16 @@ void Interpreter::executeBlock(std::vector<Statement*> statements, Environment *
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::evaluate(Expression& node)
+std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> Interpreter::evaluate(Expression& node)
 {
 	return node.accept(*this);
 }
 
 
-std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitBinaryNode(BinaryNode& node)
+std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitBinaryNode(BinaryNode& node)
 {
-	std::variant<double, int, std::string, std::nullptr_t, bool> left = evaluate(*node.left);
-	std::variant<double, int, std::string, std::nullptr_t, bool> right = evaluate(*node.right);
+	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> left = evaluate(*node.left);
+	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> right = evaluate(*node.right);
 
 	switch (node.binaryOperator.type) {
 	case TokenType::MINUS:
@@ -197,7 +241,7 @@ std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitB
 	return nullptr;
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool> Interpreter::visitGroupingNode(GroupingNode& node)
+std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitGroupingNode(GroupingNode& node)
 {
 	return evaluate(*node.expression);
 }

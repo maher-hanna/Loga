@@ -55,14 +55,18 @@ private:
     Expression* assignment();
     Expression* orExpression();
     Expression* andExpression();
+    Expression* call();
+    Expression* finishCall(Expression* callee);
 	Statement * statement();
 	Statement * printStatement();
 	Statement * expressionStatement();
 	Statement * ifStatement();
 	Statement * whileStatement();
 	Statement * forStatement();
+	Statement * returnStatement();
     Statement* declaration();
     Statement* varDeclaration();
+    Statement* function(std::string kind);
     std::vector<Statement*> block();
 
 public:

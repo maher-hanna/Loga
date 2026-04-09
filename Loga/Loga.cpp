@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
     Interpreter* interpreter = new Interpreter();
 
     if (argc > 2) {
-        std::cout << "Usage: jlox [script]";
+        std::cout << "Usage: loga [script]";
         std::exit(64);
     }
     else if (argc == 2) {

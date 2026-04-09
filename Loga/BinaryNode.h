@@ -1,7 +1,8 @@
 #pragma once
+#include <variant>
 #include "Expression.h"
 #include "Token.h"
-#include <variant>
+#include "LogaCallable.h"
 
 
 class BinaryNode : public Expression
@@ -12,7 +13,7 @@ public:
 	Expression* left;
 	Token binaryOperator;
 	Expression* right;
-	std::variant<double, int, std::string, std::nullptr_t, bool> accept(ExpressionVisitor& visitor) override;
+	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> accept(ExpressionVisitor& visitor) override;
 
 };
 
