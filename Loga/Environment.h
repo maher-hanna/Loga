@@ -19,6 +19,21 @@ public:
 	Environment() :enclosing(nullptr) {}
 	Environment(Environment* enclosing) : enclosing(enclosing) {}
 
+	Environment* ancestor(int distance) {
+		Environment* environment = this;
+		for (int i = 0; i < distance; i++) {
+			environment = environment->enclosing;
+		}
+
+		return environment;
+	}
+	void assignAt(int distance, Token name, std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value) {
+		ancestor(distance)->values[name.lexeme] = value;
+
+	}
+	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> getAt(int distance, std::string name) {
+		return ancestor(distance)->values[name];
+	}
 	void define(std::string name, std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value) {
 		values[name]= value;
 	}

@@ -2,6 +2,7 @@
 
 #include <variant>
 #include <vector>
+#include <unordered_map>
 #include "ExpressionVisitor.h"
 #include "BinaryNode.h"
 #include "UnaryNode.h"
@@ -21,7 +22,6 @@
 #include "FunctionStatement.h"
 #include "Environment.h"
 #include "LogaCallable.h"
-#include "LogaFunction.h"
 
 class Interpreter : public ExpressionVisitor, StatementVisitor {
 public:
@@ -30,6 +30,8 @@ public:
 	}
 
 	Environment* globals;
+	std::unordered_map<Expression*, int> locals;
+
 
 	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitBinaryNode(BinaryNode& node) override;
 	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitGroupingNode(GroupingNode& node) override;
@@ -47,7 +49,8 @@ public:
 	void visitWhileStatement(WhileStatement& statement) override;
 	void visitFunctionStatement(FunctionStatement& statement) override;
 	void visitReturnStatement(ReturnStatement& statement) override;
-
+	void resolve(Expression* expr, int depth);
+	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> lookUpVariable(Token name, Expression* expr);
 
 	std::string stringify(std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value);
 

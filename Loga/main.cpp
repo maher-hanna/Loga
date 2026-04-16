@@ -6,10 +6,10 @@
 #include <string>
 #include <fstream>
 #include <vector>
-#include "Loga.h"
+#include <chrono>
 #include "Errors.h"
 #include "Scanner.h"
-#include "AstPrinter.h"
+#include "Resolver.h"
 #include "Parser.h"
 #include "Interpreter.h"
 
@@ -27,7 +27,12 @@ void run(std::string source,Interpreter * interpreter) {
 
     // Stop if there was a syntax error.
     if (hadError) return;
-	AstPrinter astPrinter;
+	//AstPrinter astPrinter;
+
+    Resolver* resolver = new Resolver(interpreter);
+    resolver->resolve(statements);
+
+    if (hadError) return;
 
     interpreter->interpret(statements);
 
@@ -75,6 +80,8 @@ void runPrompt(Interpreter * interpreter) {
 
 int main(int argc, char* argv[])
 {
+    auto start = std::chrono::high_resolution_clock::now();
+
     //AstPrinter astPrinter;
 
     //ExpressionNode* expression = new BinaryNode(
@@ -101,7 +108,12 @@ int main(int argc, char* argv[])
     else {
         runPrompt(interpreter);
     }
-    //runFile("C:/Users/maher/OneDrive/Desktop/test.loga", interpreter);
+    //runFile("C:/Users/maher/dev/Loga/training/fibo.loga", interpreter);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+
+    std::cout << "Elapsed time: " << elapsed.count() << " seconds\n";
 	return 0;
 }
 

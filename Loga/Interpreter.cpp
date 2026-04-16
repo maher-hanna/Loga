@@ -34,14 +34,21 @@ std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Inte
 
 std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitVariableNode(VariableNode& node)
 {
-	return environment->get(node.name);
+	return lookUpVariable(node.name, &node);
+
 
 }
 
 std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitAssignNode(AssignNode& node)
 {
 	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value = evaluate(*(node.value));
-	environment->assign(node.name, value);
+	int distance = locals[&node];
+	if (distance != 0) {
+		environment->assignAt(distance, node.name, value);
+	}
+	else {
+		globals->assign(node.name, value);
+	}
 	return value;
 }
 
@@ -146,6 +153,23 @@ void Interpreter::visitReturnStatement(ReturnStatement& statement)
 
 	// Throw by value, not pointer:
 	throw ReturnValue(value);
+}
+
+void Interpreter::resolve(Expression* expr, int depth)
+{
+	locals[expr] =  depth;
+
+}
+
+std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::lookUpVariable(Token name, Expression* expr)
+{
+	if (locals.contains(expr)) {
+		int distance = locals[expr];
+		return environment->getAt(distance, name.lexeme);
+	}
+	else {
+		return globals->get(name);
+	}
 }
 
 std::string Interpreter::stringify(std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value)
