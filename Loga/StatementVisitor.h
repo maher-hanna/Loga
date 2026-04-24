@@ -9,6 +9,7 @@ class IfStatement;
 class WhileStatement;
 class FunctionStatement;
 class ReturnStatement;
+class ClassStatement;
 class Environment;
 
 
@@ -22,6 +23,7 @@ public:
 	virtual void visitWhileStatement(WhileStatement& statement) = 0;
 	virtual void visitFunctionStatement(FunctionStatement& statement) = 0;
 	virtual void visitReturnStatement(ReturnStatement& statement) = 0;
+	virtual void visitClassStatement(ClassStatement& statement) = 0;
 	virtual ~StatementVisitor() {} // Provide a definition
 
 };

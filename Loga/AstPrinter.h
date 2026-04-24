@@ -11,23 +11,23 @@
 #include "AssignNode.h"
 #include "LogicalNode.h"
 #include "CallNode.h"
-#include "LogaCallable.h"
+#include "Value.h"
 
 class AstPrinter: public ExpressionVisitor {
 public:
 	std::string print(Expression &node);
 
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitBinaryNode(BinaryNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitGroupingNode(GroupingNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitLiteralNode(LiteralNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitUnaryNode(UnaryNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitVariableNode(VariableNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitAssignNode(AssignNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitLogicalNode(LogicalNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitCallNode(CallNode& node) override;
+	Value visitBinaryNode(BinaryNode& node) override;
+	Value visitGroupingNode(GroupingNode& node) override;
+	Value visitLiteralNode(LiteralNode& node) override;
+	Value visitUnaryNode(UnaryNode& node) override;
+	Value visitVariableNode(VariableNode& node) override;
+	Value visitAssignNode(AssignNode& node) override;
+	Value visitLogicalNode(LogicalNode& node) override;
+	Value visitCallNode(CallNode& node) override;
 	virtual ~AstPrinter() {} // Provide a definition
 
 private:
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> parenthesize(const std::string &name,std::vector<Expression*>& nodes);
+	Value parenthesize(const std::string &name,std::vector<Expression*>& nodes);
 
 };

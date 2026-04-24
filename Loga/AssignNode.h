@@ -3,6 +3,7 @@
 #include <variant>
 #include "LogaCallable.h"
 #include "Expression.h"
+#include "Value.h"
 #include "Token.h"
 
 
@@ -13,7 +14,7 @@ public:
 	AssignNode(Token name, Expression* value) : name(name),value(value){};
 	Token name;
 	Expression* value;
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> accept(ExpressionVisitor& visitor) override;
+	Value accept(ExpressionVisitor& visitor) override;
 
 };
 

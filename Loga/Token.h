@@ -4,15 +4,16 @@
 #include <variant>
 #include "LogaCallable.h"
 #include "TokenType.h"
+#include "Value.h"
 
 class Token {
 public:
     TokenType type;
     std::string lexeme;
-    std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> literal;
+    Value literal;
     int line;
 
-    Token(TokenType type, std::string lexeme, std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> literal, int line) {
+    Token(TokenType type, std::string lexeme, Value literal, int line) {
         this->type = type;
         this->lexeme = lexeme;
         this->literal = literal;
@@ -26,7 +27,7 @@ public:
 private:
 
 
-    std::string stringify(std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> const& value) {
+    std::string stringify(Value const& value) {
       
         if (double const* pval = std::get_if<double>(&value))
             return std::to_string(*pval);

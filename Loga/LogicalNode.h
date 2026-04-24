@@ -3,6 +3,7 @@
 #include "Expression.h"
 #include "Token.h"
 #include "LogaCallable.h"
+#include "Value.h"
 
 
 class LogicalNode : public Expression
@@ -13,7 +14,7 @@ public:
 	Expression* left;
 	Token logicalOperator;
 	Expression* right;
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> accept(ExpressionVisitor& visitor) override;
+	Value accept(ExpressionVisitor& visitor) override;
 
 };
 

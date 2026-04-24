@@ -13,21 +13,28 @@
 #include "AssignNode.h"
 #include "LogicalNode.h"
 #include "CallNode.h"
-#include "LogaCallable.h"
+#include "GetNode.h"
+#include "SetNode.h"
+#include "ThisNode.h"
 #include "Interpreter.h"
 #include "FunctionType.h"
+#include "ClassType.h"
+#include "ClassStatement.h"
 
 class Resolver: public ExpressionVisitor, public StatementVisitor {
 public:
 	Resolver(Interpreter* interpreter): interpreter(interpreter),scopes() {}
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitBinaryNode(BinaryNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitGroupingNode(GroupingNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitLiteralNode(LiteralNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitUnaryNode(UnaryNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitVariableNode(VariableNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitAssignNode(AssignNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitLogicalNode(LogicalNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitCallNode(CallNode& node) override;
+	Value visitBinaryNode(BinaryNode& node) override;
+	Value visitGroupingNode(GroupingNode& node) override;
+	Value visitLiteralNode(LiteralNode& node) override;
+	Value visitUnaryNode(UnaryNode& node) override;
+	Value visitVariableNode(VariableNode& node) override;
+	Value visitAssignNode(AssignNode& node) override;
+	Value visitLogicalNode(LogicalNode& node) override;
+	Value visitCallNode(CallNode& node) override;
+	Value visitGetNode(GetNode& node) override;
+	Value visitSetNode(SetNode& node) override;
+	Value visitThisNode(ThisNode& node) override;
 
 	void visitExpressionStatement(ExpressionStatement& statement) override;
 	void visitPrintStatement(PrintStatement& statement) override;
@@ -37,6 +44,7 @@ public:
 	void visitWhileStatement(WhileStatement& statement) override;
 	void visitFunctionStatement(FunctionStatement& statement) override;
 	void visitReturnStatement(ReturnStatement& statement) override;
+	void visitClassStatement(ClassStatement& statement) override;
 
 	void resolve(std::vector<Statement*> statements);
 	void resolve(Statement* statement);
@@ -53,6 +61,7 @@ private:
 	Interpreter* interpreter;
 	std::vector<std::map<std::string, bool>> scopes;
 	FunctionType currentFunction = FunctionType::NONE;
+	ClassType currentClass = ClassType::NONE;
 
 
 };

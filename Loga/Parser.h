@@ -67,6 +67,7 @@ private:
     Statement* declaration();
     Statement* varDeclaration();
     Statement* function(std::string kind);
+    Statement* classDeclaration();
     std::vector<Statement*> block();
 
 public:

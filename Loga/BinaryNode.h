@@ -2,7 +2,7 @@
 #include <variant>
 #include "Expression.h"
 #include "Token.h"
-#include "LogaCallable.h"
+#include "Value.h"
 
 
 class BinaryNode : public Expression
@@ -13,7 +13,7 @@ public:
 	Expression* left;
 	Token binaryOperator;
 	Expression* right;
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> accept(ExpressionVisitor& visitor) override;
+	Value accept(ExpressionVisitor& visitor) override;
 
 };
 

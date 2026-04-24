@@ -8,7 +8,10 @@
 #include "VariableNode.h"
 #include "AssignNode.h"
 #include "LogicalNode.h"
+#include "ThisNode.h"
 #include "CallNode.h"
+#include "GetNode.h"
+#include "SetNode.h"
 #include "Errors.h"
 #include "PrintStatement.h"
 #include "ExpressionStatement.h"
@@ -18,6 +21,7 @@
 #include "WhileStatement.h"
 #include "FunctionStatement.h"
 #include "ReturnStatement.h"
+#include "ClassStatement.h"
 #include "ParseError.h"
 
 Expression* Parser::equality() {
@@ -106,6 +110,8 @@ Expression* Parser::primary() {
 	if (match({ TokenType::NUMBER, TokenType::STRING })) {
 		return new LiteralNode(previous().literal);
 	}
+	if (match({ TokenType::THIS })) return new ThisNode(previous());
+
 	if (match({ TokenType::IDENTIFIER })) {
 		return new VariableNode(previous());
 	}
@@ -133,6 +139,10 @@ Expression* Parser::assignment()
 
 			Token name = (dynamic_cast<VariableNode*>(expr))->name;
 			return new AssignNode(name, value);
+		}
+		else if (dynamic_cast<GetNode*>(expr)) {
+			GetNode* get = dynamic_cast<GetNode*>(expr);
+			return new SetNode(get->object, get->name, value);
 		}
 
 		error(equals, "Invalid assignment target.");
@@ -174,6 +184,11 @@ Expression* Parser::call()
 	while (true) {
 		if (match({ TokenType::LEFT_PAREN })) {
 			expr = finishCall(expr);
+		}
+		else if (match({ TokenType::DOT })) {
+			Token name = consume(TokenType::IDENTIFIER,
+				"Expect property name after '.'.");
+			expr = new GetNode(expr, name);
 		}
 		else {
 			break;
@@ -309,12 +324,13 @@ Statement* Parser::declaration()
 {
 
 	try {
+		if (match({ TokenType::CLASS })) return classDeclaration();
 		if (match({ TokenType::FUN })) return function("function");
 		if (match({ TokenType::VAR })) return varDeclaration();
 
 		return statement();
 	}
-	catch (ParseError& error) {
+	catch (ParseError&) {
 		synchronize();
 		return nullptr;
 	}
@@ -355,6 +371,20 @@ Statement* Parser::function(std::string kind)
 	consume(TokenType::LEFT_BRACE, "Expect '{' before " + kind + " body.");
 	std::vector<Statement*> body = block();
 	return new FunctionStatement(name, parameters, body);
+}
+
+Statement* Parser::classDeclaration()
+{
+	Token name = consume(TokenType::IDENTIFIER, "Expect class name.");
+	consume(TokenType::LEFT_BRACE, "Expect '{' before class body.");
+
+	std::vector<FunctionStatement*> methods;
+	while (!check(TokenType::RIGHT_BRACE) && !isAtEnd()) {
+		methods.push_back(dynamic_cast<FunctionStatement*>(function("method")));
+	}
+
+	consume(TokenType::RIGHT_BRACE, "Expect '}' after class body.");
+	return new ClassStatement(name, methods);
 }
 
 std::vector<Statement*> Parser::block()

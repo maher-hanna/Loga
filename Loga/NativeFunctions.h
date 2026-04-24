@@ -5,12 +5,13 @@
 #include <chrono>
 #include "LogaCallable.h"
 #include "Interpreter.h"
+#include "Value.h"
 
 class clock : public LogaCallable {
 	int arity() { return 0; }
 
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> call(Interpreter interpreter,
-		std::vector<std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*>> arguments) {
+	Value call(Interpreter interpreter,
+		std::vector<Value> arguments) {
 		auto now = std::chrono::system_clock::now();
 
 		auto seconds = std::chrono::duration_cast<std::chrono::seconds>(

@@ -5,7 +5,7 @@
 #include "Expression.h"
 #include "ExpressionVisitor.h"
 #include "Token.h"
-#include "LogaCallable.h"
+#include "Value.h"
 
 
 class CallNode : public Expression
@@ -17,7 +17,7 @@ public:
 	Expression* callee;
 	Token paren;
 	std::vector<Expression*> arguments;
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> accept(ExpressionVisitor& visitor) override;
+	Value accept(ExpressionVisitor& visitor) override;
 
 };
 

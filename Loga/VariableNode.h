@@ -4,17 +4,17 @@
 #include "Expression.h"
 #include "ExpressionVisitor.h"
 #include "Token.h"
-#include "LogaCallable.h"
+#include "Value.h"
 
 class VariableNode : public Expression
 {
 public:
 	VariableNode() :value() {}
 	VariableNode(Token name) :value(),name(name) {}
-	VariableNode(std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value) :value(value) {}
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> accept(ExpressionVisitor& visitor) override;
+	VariableNode(Value value) :value(value) {}
+	Value accept(ExpressionVisitor& visitor) override;
 
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value;
+	Value value;
 	Token name;
 
 private:

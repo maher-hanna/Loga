@@ -1,18 +1,17 @@
 #pragma once
 #include <exception>
 #include <string>
-#include <variant>
-#include "LogaCallable.h"
+#include "Value.h"
 
 class ReturnValue : public std::exception
 {
 public:
 	ReturnValue() :value(nullptr), message("") {}
-	ReturnValue(std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value) :value(value), message("") {}
-	ReturnValue(std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value,
+	ReturnValue(Value value) :value(value), message("") {}
+	ReturnValue(Value value,
 		const char* message) :value(value), message(message) {
 	}
-	ReturnValue(std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value,
+	ReturnValue(Value value,
 		std::string message) :value(value), message(message) {
 	}
 	virtual const char* what() const throw()
@@ -20,7 +19,7 @@ public:
 		return "Return value exception";
 	}
 
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value;
+	Value value;
 
 private:
 	std::string message;

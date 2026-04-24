@@ -11,7 +11,10 @@
 #include "VariableNode.h"
 #include "AssignNode.h"
 #include "LogicalNode.h"
+#include "GetNode.h"
+#include "SetNode.h"
 #include "CallNode.h"
+#include "ThisNode.h"
 #include "RuntimeError.h"
 #include "Errors.h"
 #include "StatementVisitor.h"
@@ -20,6 +23,7 @@
 #include "WhileStatement.h"
 #include "PrintStatement.h"
 #include "FunctionStatement.h"
+#include "ClassStatement.h"
 #include "Environment.h"
 #include "LogaCallable.h"
 
@@ -33,14 +37,17 @@ public:
 	std::unordered_map<Expression*, int> locals;
 
 
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitBinaryNode(BinaryNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitGroupingNode(GroupingNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitLiteralNode(LiteralNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitUnaryNode(UnaryNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitVariableNode(VariableNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitAssignNode(AssignNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitLogicalNode(LogicalNode& node) override;
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> visitCallNode(CallNode& node) override;
+	Value visitBinaryNode(BinaryNode& node) override;
+	Value visitGroupingNode(GroupingNode& node) override;
+	Value visitLiteralNode(LiteralNode& node) override;
+	Value visitUnaryNode(UnaryNode& node) override;
+	Value visitVariableNode(VariableNode& node) override;
+	Value visitAssignNode(AssignNode& node) override;
+	Value visitLogicalNode(LogicalNode& node) override;
+	Value visitCallNode(CallNode& node) override;
+	Value visitGetNode(GetNode& node) override;
+	Value visitSetNode(SetNode& node) override;
+	Value visitThisNode(ThisNode& node) override;
 	void visitExpressionStatement(ExpressionStatement& statement) override;
 	void visitPrintStatement(PrintStatement& statement) override;
 	void visitVariableStatement(VariableStatement& statement) override;
@@ -49,10 +56,11 @@ public:
 	void visitWhileStatement(WhileStatement& statement) override;
 	void visitFunctionStatement(FunctionStatement& statement) override;
 	void visitReturnStatement(ReturnStatement& statement) override;
+	void visitClassStatement(ClassStatement& statement) override;
 	void resolve(Expression* expr, int depth);
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> lookUpVariable(Token name, Expression* expr);
+	Value lookUpVariable(Token name, Expression* expr);
 
-	std::string stringify(std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value);
+	std::string stringify(Value value);
 
 	void execute(Statement* stmt) {
 		stmt->accept(*this);
@@ -76,28 +84,28 @@ private:
 	Environment * environment = const_cast<Environment*>(globals);
 
 
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> evaluate(Expression& node);
+	Value evaluate(Expression& node);
 
-	bool isTruthy(std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value) {
+	bool isTruthy(Value value) {
 		if (std::holds_alternative<nullptr_t>(value)) return false;
 		if (std::holds_alternative<bool>(value)) return std::get<bool>(value);
 		return true;
 	}
 
-	bool isEqual(std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*>  a,
-		std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*>  b) {
+	bool isEqual(Value  a,
+		Value  b) {
 		if (std::holds_alternative<nullptr_t>(a) && std::holds_alternative<nullptr_t>(b)) return true;
 		if (std::holds_alternative<nullptr_t>(a)) return false;
 
 		return a == b;
 	}
 
-	void checkNumberOperand(Token opr, std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> operand) {
+	void checkNumberOperand(Token opr, Value operand) {
 		if (std::holds_alternative<double>(operand)) return;
 		throw RuntimeError(opr, "Operand must be a number.");
 	}
-	void checkNumberOperands(Token opr, std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> left,
-		std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> right) {
+	void checkNumberOperands(Token opr, Value left,
+		Value right) {
 		if (std::holds_alternative<double>(left) && std::holds_alternative<double>(right)) return;
 
 		throw RuntimeError(opr, "Operands must be a numbers.");

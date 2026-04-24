@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <unordered_map>
 #include "Interpreter.h"
 #include "ExpressionStatement.h"
 #include "PrintStatement.h"
@@ -10,15 +11,18 @@
 #include "LogaFunction.h"
 #include "ReturnStatement.h"
 #include "ReturnValue.h"
+#include "LogaClass.h"
+#include "LogaFunction.h"
+#include "Value.h"
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitLiteralNode(LiteralNode& node)
+Value Interpreter::visitLiteralNode(LiteralNode& node)
 {
 	return node.value;
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitUnaryNode(UnaryNode& node)
+Value Interpreter::visitUnaryNode(UnaryNode& node)
 {
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> right = evaluate(*node.right);
+	Value right = evaluate(*node.right);
 
 	switch (node.unaryOperator.type) {
 	case TokenType::BANG:
@@ -32,16 +36,16 @@ std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Inte
 	return nullptr;
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitVariableNode(VariableNode& node)
+Value Interpreter::visitVariableNode(VariableNode& node)
 {
 	return lookUpVariable(node.name, &node);
 
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitAssignNode(AssignNode& node)
+Value Interpreter::visitAssignNode(AssignNode& node)
 {
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value = evaluate(*(node.value));
+	Value value = evaluate(*(node.value));
 	int distance = locals[&node];
 	if (distance != 0) {
 		environment->assignAt(distance, node.name, value);
@@ -52,9 +56,9 @@ std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Inte
 	return value;
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitLogicalNode(LogicalNode& node)
+Value Interpreter::visitLogicalNode(LogicalNode& node)
 {
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> left = evaluate(*(node.left));
+	Value left = evaluate(*(node.left));
 
 	if (node.logicalOperator.type == TokenType::OR) {
 		if (isTruthy(left)) return left;
@@ -66,16 +70,16 @@ std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Inte
 	return evaluate(*(node.right));
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitCallNode(CallNode& node)
+Value Interpreter::visitCallNode(CallNode& node)
 {
-	std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> callee = evaluate(*(node.callee));
+	Value callee = evaluate(*(node.callee));
 
-	std::vector<std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*>> arguments;
+	std::vector<Value> arguments;
 	for (Expression* argument : node.arguments) {
 		arguments.push_back(evaluate(*argument));
 	}
 	if (!(std::holds_alternative<LogaCallable*>)(callee)) {
-		throw new RuntimeError(node.paren,
+		throw RuntimeError(node.paren,
 			"Can only call functions and classes.");
 	}
 	LogaCallable* function = std::get<LogaCallable*>(callee);
@@ -88,6 +92,36 @@ std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Inte
 	return function->call(this, arguments);
 }
 
+Value Interpreter::visitGetNode(GetNode& node)
+{
+	Value object = evaluate(*(node.object));
+	if (std::holds_alternative<LogaInstance*>(object)) {
+		return (std::get<LogaInstance*>(object))->get(node.name);
+	}
+
+	throw RuntimeError(node.name,
+		"Only instances have properties.");
+}
+
+Value Interpreter::visitSetNode(SetNode& node)
+{
+	Value object = evaluate(*(node.object));
+
+	if (!(std::holds_alternative<LogaInstance*>(object))) {
+		throw RuntimeError(node.name,
+			"Only instances have fields.");
+	}
+
+	Value value = evaluate(*(node.value));
+	(std::get<LogaInstance*>(object))->set(node.name, value);
+	return value;
+}
+
+Value Interpreter::visitThisNode(ThisNode& node)
+{
+	return lookUpVariable(node.keyword, &node);
+}
+
 void Interpreter::visitExpressionStatement(ExpressionStatement& statement)
 {
 	evaluate(*(statement.expression));
@@ -96,14 +130,14 @@ void Interpreter::visitExpressionStatement(ExpressionStatement& statement)
 
 void Interpreter::visitPrintStatement(PrintStatement& statement)
 {
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value = evaluate(*(statement.expression));
+	Value value = evaluate(*(statement.expression));
 	std::cout << stringify(value) << std::endl;
 	return;
 }
 
 void Interpreter::visitVariableStatement(VariableStatement& statement)
 {
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value = nullptr;
+	Value value = nullptr;
 	if (statement.expression != nullptr) {
 		value = evaluate(*(statement.expression));
 	}
@@ -141,18 +175,32 @@ void Interpreter::visitWhileStatement(WhileStatement& statement)
 
 void Interpreter::visitFunctionStatement(FunctionStatement& statement)
 {
-	LogaFunction * function = new LogaFunction(statement, environment);
+	LogaFunction * function = new LogaFunction(statement, environment,false);
 	environment->define(statement.name.lexeme, function);
 	return;
 }
 
 void Interpreter::visitReturnStatement(ReturnStatement& statement)
 {
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value = nullptr;
+	Value value = nullptr;
 	if (statement.value != nullptr) value = evaluate(*(statement.value));
 
 	// Throw by value, not pointer:
 	throw ReturnValue(value);
+}
+
+void Interpreter::visitClassStatement(ClassStatement& statement)
+{
+	environment->define(statement.name.lexeme, nullptr);
+	std::unordered_map<std::string, LogaFunction*> methods;
+	for (FunctionStatement* method : statement.methods) {
+		LogaFunction* function = new LogaFunction(*method, environment, method->name.lexeme == "init");
+		methods[method->name.lexeme] = function;
+	}
+
+	LogaClass* klass = new LogaClass(statement.name.lexeme, methods);
+	environment->assign(statement.name, klass);
+	return;
 }
 
 void Interpreter::resolve(Expression* expr, int depth)
@@ -161,7 +209,7 @@ void Interpreter::resolve(Expression* expr, int depth)
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::lookUpVariable(Token name, Expression* expr)
+Value Interpreter::lookUpVariable(Token name, Expression* expr)
 {
 	if (locals.contains(expr)) {
 		int distance = locals[expr];
@@ -172,25 +220,17 @@ std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Inte
 	}
 }
 
-std::string Interpreter::stringify(std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value)
+std::string Interpreter::stringify(Value value)
 {
-	if (std::holds_alternative<nullptr_t>(value)) return "nil";
+	if (std::holds_alternative<std::nullptr_t>(value)) return "nil";
+	if (std::holds_alternative<double>(value)) { /* existing code */ }
+	if (std::holds_alternative<int>(value)) return std::to_string(std::get<int>(value));
+	if (std::holds_alternative<bool>(value)) return std::get<bool>(value) ? "true" : "false";
+	if (std::holds_alternative<std::string>(value)) return std::get<std::string>(value);
+	if (std::holds_alternative<LogaCallable*>(value)) return std::get<LogaCallable*>(value)->toString();
+	if (std::holds_alternative<LogaInstance*>(value)) return std::get<LogaInstance*>(value)->toString();
+	return "<unknown>";
 
-	if (std::holds_alternative<double>(value)) {
-		std::string text = std::to_string(std::get<double>(value));
-		if (text.ends_with(".0")) {
-			text = text.substr(0, text.length() - 2);
-		}
-		return text;
-	}
-	if (std::holds_alternative<bool>(value)) {
-		bool boolValue = std::get<bool>(value);
-		return boolValue ? "true" : "false";
-		
-		
-	}
-
-	return std::get<std::string>(value);
 
 }
 
@@ -212,16 +252,16 @@ void Interpreter::executeBlock(std::vector<Statement*> statements, Environment *
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool,LogaCallable*> Interpreter::evaluate(Expression& node)
+Value Interpreter::evaluate(Expression& node)
 {
 	return node.accept(*this);
 }
 
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitBinaryNode(BinaryNode& node)
+Value Interpreter::visitBinaryNode(BinaryNode& node)
 {
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> left = evaluate(*node.left);
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> right = evaluate(*node.right);
+	Value left = evaluate(*node.left);
+	Value right = evaluate(*node.right);
 
 	switch (node.binaryOperator.type) {
 	case TokenType::MINUS:
@@ -265,7 +305,7 @@ std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Inte
 	return nullptr;
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Interpreter::visitGroupingNode(GroupingNode& node)
+Value Interpreter::visitGroupingNode(GroupingNode& node)
 {
 	return evaluate(*node.expression);
 }

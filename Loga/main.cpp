@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
     else {
         runPrompt(interpreter);
     }
-    //runFile("C:/Users/maher/dev/Loga/training/fibo.loga", interpreter);
+    //runFile("C:/Users/maher/dev/Loga/training/class.loga", interpreter);
 
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;

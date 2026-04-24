@@ -5,6 +5,7 @@
 #include <variant>
 #include "Token.h"
 #include "RuntimeError.h"
+#include "Value.h"
 
 
 class Environment
@@ -27,18 +28,18 @@ public:
 
 		return environment;
 	}
-	void assignAt(int distance, Token name, std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value) {
+	void assignAt(int distance, Token name, Value value) {
 		ancestor(distance)->values[name.lexeme] = value;
 
 	}
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> getAt(int distance, std::string name) {
+	Value getAt(int distance, std::string name) {
 		return ancestor(distance)->values[name];
 	}
-	void define(std::string name, std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value) {
+	void define(std::string name, Value value) {
 		values[name]= value;
 	}
 
-	void assign(Token name, std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> value) {
+	void assign(Token name, Value value) {
 		if (values.contains(name.lexeme)) {
 			values[name.lexeme] = value;
 			return;
@@ -53,7 +54,7 @@ public:
 			errorMessage.c_str());
 	}
 
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> get(Token name) {
+	Value get(Token name) {
 		if (values.contains(name.lexeme)) {
 			return values[name.lexeme];
 		}
@@ -65,7 +66,7 @@ public:
 			errorMessage.c_str());
 	}
 
-	std::map<std::string, std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*>> values;
+	std::map<std::string, Value> values;
 	Environment* enclosing;
 
 };

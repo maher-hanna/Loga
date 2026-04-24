@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
-#include <variant>
-#include <string>
+#include "Value.h"
 
 class BinaryNode;
 class GroupingNode;
@@ -16,12 +15,16 @@ class Interpreter;
 
 class LogaCallable {
 public:
-	virtual std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> call(Interpreter* interpreter,
-		std::vector<std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*>> arguments) = 0;
+	virtual Value call(Interpreter* interpreter,
+		std::vector<Value> arguments) = 0;
 
 
 	virtual int getNumberOfArguments() { return numberOfArguments; }
+	virtual std::string toString() {
+		return "<callable>";
+	}
 	virtual ~LogaCallable() {} // Provide a definition
+
 protected:
 	int numberOfArguments = 0;
 
@@ -31,8 +34,8 @@ protected:
 
 class EmptyFunctionCall : public LogaCallable {
 public:
-	std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> call(Interpreter* interpreter,
-		std::vector<std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*>> arguments) override {
+	Value call(Interpreter* interpreter,
+		std::vector<Value> arguments) override {
 		return nullptr;
 	}
 

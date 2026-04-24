@@ -1,4 +1,4 @@
-#include <variant>
+#include "Value.h"
 #include <string>
 #include "Resolver.h"
 #include "BlockStatement.h"
@@ -7,31 +7,31 @@
 #include "FunctionType.h"
 
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Resolver::visitBinaryNode(BinaryNode& node) {
+Value Resolver::visitBinaryNode(BinaryNode& node) {
 	resolve(node.left);
 	resolve(node.right);
 	return nullptr;
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Resolver::visitGroupingNode(GroupingNode& node) {
+Value Resolver::visitGroupingNode(GroupingNode& node) {
 	resolve(node.expression);
 	return nullptr;
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Resolver::visitLiteralNode(LiteralNode& node) {
+Value Resolver::visitLiteralNode(LiteralNode& node) {
 	return nullptr;
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Resolver::visitUnaryNode(UnaryNode& node) {
+Value Resolver::visitUnaryNode(UnaryNode& node) {
 	resolve(node.right);
 	return nullptr;
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Resolver::visitVariableNode(VariableNode& node)
+Value Resolver::visitVariableNode(VariableNode& node)
 {
 	if (!scopes.empty()) {
 		if (scopes.back().contains(node.name.lexeme) && scopes.back()[node.name.lexeme] == false) {
@@ -45,21 +45,21 @@ std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Reso
 	return nullptr;
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Resolver::visitAssignNode(AssignNode& node)
+Value Resolver::visitAssignNode(AssignNode& node)
 {
 	resolve(node.value);
 	resolveLocal(&node, node.name);
 	return nullptr;
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Resolver::visitLogicalNode(LogicalNode& node)
+Value Resolver::visitLogicalNode(LogicalNode& node)
 {
 	resolve(node.left);
 	resolve(node.right);
 	return nullptr;
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Resolver::visitCallNode(CallNode& node)
+Value Resolver::visitCallNode(CallNode& node)
 {
 	resolve(node.callee);
 
@@ -67,6 +67,30 @@ std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> Reso
 		resolve(argument);
 	}
 
+	return nullptr;
+}
+
+Value Resolver::visitGetNode(GetNode& node)
+{
+	resolve(node.object);
+	return nullptr;
+}
+
+Value Resolver::visitSetNode(SetNode& node)
+{
+	resolve(node.value);
+	resolve(node.object);
+	return nullptr;
+}
+
+Value Resolver::visitThisNode(ThisNode& node)
+{
+	if (currentClass == ClassType::NONE) {
+		error(node.keyword,
+			"Can't use 'this' outside of a class.");
+		return nullptr;
+	}
+	resolveLocal(&node, node.keyword);
 	return nullptr;
 }
 
@@ -130,8 +154,33 @@ void Resolver::visitReturnStatement(ReturnStatement& statement)
 		error(statement.keyword, "Can't return from top-level code.");
 	}
 	if (statement.value != nullptr) {
+		if (currentFunction == FunctionType::INITIALIZER) {
+			error(statement.keyword,
+				"Can't return a value from an initializer.");
+		}
 		resolve(statement.value);
 	}
+
+	return;
+}
+
+void Resolver::visitClassStatement(ClassStatement& statement)
+{
+	ClassType enclosingClass = currentClass;
+	currentClass = ClassType::CLASS;
+	declare(statement.name);
+	define(statement.name);
+	beginScope();
+	scopes.back().insert({"this", true});
+	for (FunctionStatement* method : statement.methods) {
+		FunctionType declaration = FunctionType::METHOD;
+		if (method->name.lexeme == "init") {
+			declaration = FunctionType::INITIALIZER;
+		}
+		resolveFunction(*method, declaration);
+	}
+	endScope();
+	currentClass = enclosingClass;
 
 	return;
 }

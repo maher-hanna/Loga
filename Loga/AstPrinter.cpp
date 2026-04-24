@@ -8,7 +8,7 @@ std::string AstPrinter::print(Expression& node) {
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> AstPrinter::visitBinaryNode(BinaryNode& node) {
+Value AstPrinter::visitBinaryNode(BinaryNode& node) {
 	std::vector<Expression*> expressionItems;
 	expressionItems.push_back(node.left);
 	expressionItems.push_back(node.right);
@@ -16,47 +16,47 @@ std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> AstP
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> AstPrinter::visitGroupingNode(GroupingNode& node) {
+Value AstPrinter::visitGroupingNode(GroupingNode& node) {
 	std::vector<Expression*> expressionItems;
 	expressionItems.push_back(node.expression);
 	return parenthesize("group", expressionItems);
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> AstPrinter::visitLiteralNode(LiteralNode& node) {
+Value AstPrinter::visitLiteralNode(LiteralNode& node) {
 	if (std::holds_alternative<std::nullptr_t>(node.value)) return "nil";
 	return std::get<std::string>(node.value);
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> AstPrinter::visitUnaryNode(UnaryNode& node) {
+Value AstPrinter::visitUnaryNode(UnaryNode& node) {
 	std::vector<Expression*> expressionItems;
 	expressionItems.push_back(node.right);
 	return parenthesize(node.unaryOperator.lexeme, expressionItems);
 
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> AstPrinter::visitVariableNode(VariableNode& node)
+Value AstPrinter::visitVariableNode(VariableNode& node)
 {
-	return std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*>();
+	return Value();
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> AstPrinter::visitAssignNode(AssignNode& node)
+Value AstPrinter::visitAssignNode(AssignNode& node)
 {
-	return std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*>();
+	return Value();
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> AstPrinter::visitLogicalNode(LogicalNode& node)
+Value AstPrinter::visitLogicalNode(LogicalNode& node)
 {
-	return std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*>();
+	return Value();
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> AstPrinter::visitCallNode(CallNode& node)
+Value AstPrinter::visitCallNode(CallNode& node)
 {
-	return std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*>();
+	return Value();
 }
 
-std::variant<double, int, std::string, std::nullptr_t, bool, LogaCallable*> AstPrinter::parenthesize(const std::string& name,std::vector<Expression*>& nodes)
+Value AstPrinter::parenthesize(const std::string& name,std::vector<Expression*>& nodes)
 {
 	std::string result = "";
 
